@@ -1,7 +1,14 @@
 "use client";
-import { DragEvent, MouseEvent, ChangeEvent } from "react";
+import { DragEvent, MouseEvent, ChangeEvent, FormEvent, useState } from "react";
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function Home() {
+  // useRef to attach refs to audio-input, uploaded-file, dropbox
+  // yea baby
+  const [prediction, setPrediction] = useState(null);
+  const [error, setError] = useState(null);
+
   function handleDragEnter(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -24,26 +31,35 @@ export default function Home() {
   function handleDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
-    e.currentTarget.classList.remove(`border-green-200`);
-    e.currentTarget.classList.add(`border-green-600`);
-
     const files = e.dataTransfer.files;
+
+    let uploadedFile = document.getElementById("file-example") as HTMLElement;
     const inputAudio = document.getElementById(
-      "input-audio"
+      "inputAudio"
     ) as HTMLInputElement;
-    inputAudio.files = files;
-    if (inputAudio.files.length > 0) {
-      let uploadedFile = document.getElementById("file-example") as HTMLElement;
-      uploadedFile.textContent = inputAudio.files[0].name;
-      uploadedFile.classList.add(`text-green-200`, "opacity-100");
-      // e.currentTarget.appendChild(uploadedFile);
+
+    if (files[0].type.startsWith("audio")) {
+      e.currentTarget.classList.remove(`border-green-200`);
+      e.currentTarget.classList.add(`border-green-600`);
+      console.log(true);
+      inputAudio.files = files;
+      if (inputAudio.files.length > 0) {
+        uploadedFile.textContent = inputAudio.files[0].name;
+        uploadedFile.classList.add(`text-green-200`, "opacity-100");
+      }
+    } else {
+      uploadedFile.textContent = "invalid file type";
+      e.currentTarget.classList.remove(`border-green-200`);
+      e.currentTarget.classList.add(`border-red-600`);
+      uploadedFile.classList.add("text-red-200", "opacity-100");
+      // disable submit button
     }
   }
 
   function handleClick(e: MouseEvent<HTMLDivElement>) {
     e.preventDefault();
     const inputAudio = document.getElementById(
-      "input-audio"
+      "inputAudio"
     ) as HTMLInputElement;
     inputAudio.click();
   }
@@ -57,15 +73,52 @@ export default function Home() {
     }
   }
 
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    const target = e.target as HTMLFormElement;
+    const response = await fetch("api/hello", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputAudio: target.inputAudio.value,
+      }),
+    });
+    let prediction = response;
+    console.log(prediction);
+    // if (response.status !== 201) {
+    //   setError(prediction.detail);
+    //   return;
+    // }
+    // setPrediction(prediction);
+
+    // while (
+    //   prediction.status !== "succeeded" &&
+    //   prediction.status !== "failed"
+    // ) {
+    //   await sleep(1000);
+    //   const response = await fetch("/api/predictions/" + prediction.id);
+    //   prediction = await response.json();
+    //   if (response.status !== 200) {
+    //     setError(prediction.detail);
+    //     return;
+    //   }
+    //   console.log({ prediction });
+    //   setPrediction(prediction);
+    // }
+  }
+
   return (
     <main className="flex flex-col justify-center items-center stack mt-4">
       <h4 className="font-mono text-4xl">input</h4>
       <form
-        action="/api/transcribe"
+        // action="/api/transcribe"
+        onSubmit={handleSubmit}
         className="border-white border-2 border-solid w-1/2 p-4 stack"
       >
         <div className="flex flex-col stack">
-          <label htmlFor="input-audio">
+          <label htmlFor="inputAudio">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -86,12 +139,15 @@ export default function Home() {
           </label>
           <input
             type="file"
-            name="input-audio"
-            id="input-audio"
+            name="inputAudio"
+            id="inputAudio"
             className="hidden"
+            accept=".mp3,mp4,.zip"
             onChange={handleChange}
+            required
           />
           <div
+            id="dropbox"
             className="flex flex-col justify-center items-center gap-4 h-36 text-shade border-white border-2 border-opacity-90 border-dashed cursor-pointer my-auto px-4"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
@@ -117,7 +173,10 @@ export default function Home() {
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              Drop a file or click to select
+              <p>
+                Drop or click to select an{" "}
+                <span className="underline">audio file</span>
+              </p>
             </div>
             <div
               className="font-mono text-gray-100 opacity-50"
