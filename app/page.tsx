@@ -28,31 +28,33 @@ async function postAudioToSupa(fileName: string, file: File) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// type Prediction = any;
 type Prediction = {
-  completed_at: string | null;
-  created_at: string | null;
-  error: string | null;
-  id: string | null;
-  input: {
-    audio: string | null;
+  completed_at?: string | null;
+  created_at?: string | null;
+  error?: string | null;
+  id?: string | null;
+  input?: {
+    audio?: string | null;
   };
-  logs: null;
-  metrics: {};
-  output: null;
-  started_at: null;
-  status: string | null;
-  urls: {
-    get: string;
-    cancel: string;
+  logs?: null;
+  metrics?: {};
+  output?: null;
+  started_at?: null;
+  status?: string | null;
+  urls?: {
+    get?: string | URL;
+    cancel?: string | URL;
   };
-  version: string;
-  webhook_completed: string | null;
+  version?: string;
+  webhook_completed?: string | null;
+  url?: string | null;
+  detail?: string | null;
 };
 
 export default function Home() {
-  const [prediction, setPrediction] = useState(null);
-  const [error, setError] = useState(null);
+  const [prediction, setPrediction] = useState<Prediction>({});
+
+  const [error, setError] = useState<string>("");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -72,33 +74,59 @@ export default function Home() {
           body: JSON.stringify({ url }),
         });
 
-        let prediction = await response.json();
+        let whisperInit = await response.json();
+        setPrediction(whisperInit);
         console.log(prediction);
 
-        if (response.status !== 201) {
-          setError(prediction.detail);
-          return;
-        }
-        setPrediction(prediction);
-
         while (
+          prediction.status &&
           prediction.status !== "succeeded" &&
           prediction.status !== "failed"
         ) {
           await sleep(1000);
-          const response = await fetch("api/hello", {
-            body: JSON.stringify({
-              id: prediction.id,
-            }),
+          const whisper = await fetch(prediction.urls?.get!, {
+            mode: "no-cors",
+            headers: {
+              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+              "Content-Type": "application/json",
+            },
           });
-          prediction = await response.json();
-          if (response.status !== 200) {
-            setError(prediction.detail);
-            return;
-          }
-          console.log({ prediction });
-          setPrediction(prediction);
+
+          let predictionStatus = await whisper.json();
+
+          console.log(predictionStatus);
+          setPrediction(predictionStatus);
         }
+
+        // if (whisperInit.status !== 201) {
+        //   setError(prediction.detail);
+        //   return;
+        // }
+
+        // setPrediction(() => whisperInit);
+
+        // if (prediction !== null) {
+        //   while (
+        //     prediction.status !== "succeeded" &&
+        //     prediction.status !== "failed"
+        //   ) {
+        //     await sleep(1000);
+        //     console.log(prediction);
+        //     const response = await fetch(
+        //       "https://api.replicate.com/v1/predictions/" + prediction.id,
+        //       {
+        //         headers: {
+        //           Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+        //           "Content-Type": "application/json",
+        //         },
+        //       }
+        //     );
+
+        //     let whisperPrediction = await response.json();
+        //     console.log({ prediction });
+        //     setPrediction(() => whisperPrediction);
+        //   }
+        // }
       }
     }
   }
@@ -106,9 +134,9 @@ export default function Home() {
   return (
     <main className="flex flex-col justify-center items-center stack mt-4">
       <AudioForm handleSubmit={handleSubmit} />
-      {error && <div>{error}</div>}
-
-      {prediction && (
+      {/* {error && <div>{error}</div>} */}
+      {/* what would really be cool is to stream in the results */}
+      {/* {prediction && (
         <div>
           {prediction && (
             <div>
@@ -117,7 +145,7 @@ export default function Home() {
           )}
           <p>status: {prediction}</p>
         </div>
-      )}
+      )} */}
     </main>
   );
 }

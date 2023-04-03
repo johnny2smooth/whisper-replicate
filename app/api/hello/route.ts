@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const { id } = await request.json();
+  const { id, url } = await request.json();
   const response = await fetch(
     "https://api.replicate.com/v1/predictions/" + id,
     {
@@ -17,6 +17,7 @@ export async function GET(request: Request) {
   }
 
   const prediction = await response.json();
+  console.log(prediction);
   return NextResponse.json(prediction);
 }
 
@@ -36,6 +37,5 @@ export async function POST(request: Request) {
     }),
   });
   let prediction = await response.json();
-  console.log(prediction);
   return NextResponse.json(prediction);
 }
