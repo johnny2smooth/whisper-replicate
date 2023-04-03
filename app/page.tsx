@@ -2,7 +2,8 @@
 import { FormEvent } from "react";
 import AudioForm from "./audio-form";
 import { createClient } from "@supabase/supabase-js";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,7 @@ const supabase = createClient(
 async function postAudioToSupa(fileName: string, file: File) {
   const { data, error } = await supabase.storage
     .from("audio")
-    .upload(`${fileName}`, file, {
+    .upload(`${fileName}testingwow`, file, {
       contentType: "audio/mpeg",
       upsert: false,
     });
@@ -22,7 +23,7 @@ async function postAudioToSupa(fileName: string, file: File) {
 
   const url = `${
     process.env.NEXT_PUBLIC_SUPABASE_URL
-  }/storage/v1/object/public/audio/${encodeURIComponent(fileName)}`;
+  }/storage/v1/object/public/audio/${encodeURIComponent(fileName)}testingwow`;
   return { url, data, error };
 }
 
@@ -55,6 +56,19 @@ export default function Home() {
   const [prediction, setPrediction] = useState<Prediction>({});
 
   const [error, setError] = useState<string>("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set(name, value);
+
+      return params.toString();
+    },
+    [searchParams]
+  );
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -76,26 +90,16 @@ export default function Home() {
 
         let whisperInit = await response.json();
         setPrediction(whisperInit);
-        console.log(prediction);
-
-        while (
-          prediction.status &&
-          prediction.status !== "succeeded" &&
-          prediction.status !== "failed"
-        ) {
+        router.push(pathname + "?" + createQueryString("id", whisperInit.id));
+        let i = 0;
+        while (i < 7) {
           await sleep(1000);
-          const whisper = await fetch(prediction.urls?.get!, {
-            mode: "no-cors",
-            headers: {
-              Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
-              "Content-Type": "application/json",
-            },
-          });
-
+          console.log("prediction initiated");
+          const whisper = await fetch("api/hello");
           let predictionStatus = await whisper.json();
-
           console.log(predictionStatus);
           setPrediction(predictionStatus);
+          i++;
         }
 
         // if (whisperInit.status !== 201) {
@@ -134,6 +138,7 @@ export default function Home() {
   return (
     <main className="flex flex-col justify-center items-center stack mt-4">
       <AudioForm handleSubmit={handleSubmit} />
+      <p>pathname: {pathname}</p>
       {/* {error && <div>{error}</div>} */}
       {/* what would really be cool is to stream in the results */}
       {/* {prediction && (
