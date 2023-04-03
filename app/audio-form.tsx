@@ -38,7 +38,6 @@ export default function AudioForm({
     if (files[0].type.startsWith("audio")) {
       e.currentTarget.classList.remove(`border-green-200`);
       e.currentTarget.classList.add(`border-green-600`);
-      console.log(true);
       inputAudio.files = files;
       if (inputAudio.files.length > 0) {
         uploadedFile.textContent = inputAudio.files[0].name;

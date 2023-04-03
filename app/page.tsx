@@ -2,13 +2,14 @@
 import { FormEvent } from "react";
 import AudioForm from "./audio-form";
 import { createClient } from "@supabase/supabase-js";
+import { useState } from "react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-async function postAudioToSupa(fileName: string, file: string) {
+async function postAudioToSupa(fileName: string, file: File) {
   const { data, error } = await supabase.storage
     .from("audio")
     .upload(`${fileName}`, file, {
@@ -20,12 +21,39 @@ async function postAudioToSupa(fileName: string, file: string) {
   }
 
   const url = `${
-    process.env.SUPABASE_URL
+    process.env.NEXT_PUBLIC_SUPABASE_URL
   }/storage/v1/object/public/audio/${encodeURIComponent(fileName)}`;
-  return url;
+  return { url, data, error };
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// type Prediction = any;
+type Prediction = {
+  completed_at: string | null;
+  created_at: string | null;
+  error: string | null;
+  id: string | null;
+  input: {
+    audio: string | null;
+  };
+  logs: null;
+  metrics: {};
+  output: null;
+  started_at: null;
+  status: string | null;
+  urls: {
+    get: string;
+    cancel: string;
+  };
+  version: string;
+  webhook_completed: string | null;
+};
+
 export default function Home() {
+  const [prediction, setPrediction] = useState(null);
+  const [error, setError] = useState(null);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
@@ -34,31 +62,43 @@ export default function Home() {
     ) as HTMLInputElement;
 
     if (inputAudio.files) {
-      // handle this step on client -> then send off api request for below
-      // tell the user that we got their file and it is being uploaded to a DB
-      // Once we get a response back from the DB, we tell them we are sending to a model
-      // but we can do all of that here for now...
-      const { data, error } = await supabase.storage
-        .from("audio")
-        .upload(
-          inputAudio.files[0].name.split(".")[0] +
-            String(inputAudio.files[0].size),
-          inputAudio.files[0],
-          {
-            contentType: "audio/mpeg",
-          }
-        );
-      if (error) {
-        console.error(error);
-      }
-      if (data) {
-        const url = `${
-          process.env.NEXT_PUBLIC_SUPABASE_URL
-        }/storage/v1/object/public/audio/${encodeURIComponent(data?.path)}`;
+      const { url, data, error } = await postAudioToSupa(
+        inputAudio.files[0].name,
+        inputAudio.files[0]
+      );
+      if (!error) {
         const response = await fetch("api/hello", {
           method: "POST",
-          body: url,
+          body: JSON.stringify({ url }),
         });
+
+        let prediction = await response.json();
+        console.log(prediction);
+
+        if (response.status !== 201) {
+          setError(prediction.detail);
+          return;
+        }
+        setPrediction(prediction);
+
+        while (
+          prediction.status !== "succeeded" &&
+          prediction.status !== "failed"
+        ) {
+          await sleep(1000);
+          const response = await fetch("api/hello", {
+            body: JSON.stringify({
+              id: prediction.id,
+            }),
+          });
+          prediction = await response.json();
+          if (response.status !== 200) {
+            setError(prediction.detail);
+            return;
+          }
+          console.log({ prediction });
+          setPrediction(prediction);
+        }
       }
     }
   }
@@ -66,6 +106,18 @@ export default function Home() {
   return (
     <main className="flex flex-col justify-center items-center stack mt-4">
       <AudioForm handleSubmit={handleSubmit} />
+      {error && <div>{error}</div>}
+
+      {prediction && (
+        <div>
+          {prediction && (
+            <div>
+              <pre>{JSON.stringify(prediction, null, 2)}</pre>
+            </div>
+          )}
+          <p>status: {prediction}</p>
+        </div>
+      )}
     </main>
   );
 }
