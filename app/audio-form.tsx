@@ -81,30 +81,7 @@ export default function AudioForm() {
         inputAudio.files[0].name,
         inputAudio.files[0]
       );
-      // setSupabaseUrl(url);
       router.push("/" + data.path);
-      router.refresh();
-      // if (!error) {
-      //   const response = await fetch("api/hello", {
-      //     method: "POST",
-      //     body: JSON.stringify({ url }),
-      //   });
-
-      //   let whisperInit = await response.json();
-      //   setPrediction(whisperInit);
-      //   router.push(pathname + "?" + createQueryString("id", whisperInit.id));
-      //   let i = 0;
-      //   while (i < 7) {
-      //     await sleep(1000);
-      //     console.log("prediction initiated");
-      //     const whisper = await fetch("api/hello");
-      //     let predictionStatus = await whisper.json();
-      //     console.log(predictionStatus);
-      //     setPrediction(predictionStatus);
-      //     i++;
-      //   }
-
-      // }
     }
   }
 
