@@ -1,11 +1,11 @@
-// "use client";
+"use client";
 import { DragEvent, MouseEvent, ChangeEvent, FormEvent, useState } from "react";
+import { postAudioToSupa } from "./post-audio-to-supabase";
+import { useRouter } from "next/navigation";
 
-export default function AudioForm({
-  handleSubmit,
-}: {
-  handleSubmit: (e: FormEvent<Element>) => Promise<void>;
-}) {
+export default function AudioForm() {
+  const router = useRouter();
+
   function handleDragEnter(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -66,6 +66,45 @@ export default function AudioForm({
       let uploadedFile = document.getElementById("file-example") as HTMLElement;
       uploadedFile.textContent = e.target.files[0].name;
       uploadedFile.classList.add(`text-green-200`, "opacity-100");
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    const inputAudio = document.getElementById(
+      "inputAudio"
+    ) as HTMLInputElement;
+
+    if (inputAudio.files) {
+      const { data, error } = await postAudioToSupa(
+        inputAudio.files[0].name,
+        inputAudio.files[0]
+      );
+      // setSupabaseUrl(url);
+      router.push("/" + data.path);
+      router.refresh();
+      // if (!error) {
+      //   const response = await fetch("api/hello", {
+      //     method: "POST",
+      //     body: JSON.stringify({ url }),
+      //   });
+
+      //   let whisperInit = await response.json();
+      //   setPrediction(whisperInit);
+      //   router.push(pathname + "?" + createQueryString("id", whisperInit.id));
+      //   let i = 0;
+      //   while (i < 7) {
+      //     await sleep(1000);
+      //     console.log("prediction initiated");
+      //     const whisper = await fetch("api/hello");
+      //     let predictionStatus = await whisper.json();
+      //     console.log(predictionStatus);
+      //     setPrediction(predictionStatus);
+      //     i++;
+      //   }
+
+      // }
     }
   }
 

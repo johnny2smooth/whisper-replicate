@@ -1,16 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
-import { type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { postAudioToSupa } from "@/app/post-audio-to-supabase";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// );
 
-export async function POST(request: NextRequest) {
-  const { fileName } = await request.json();
-  return new Response(request.body);
-  // let audioURL = uploadAudioToSupabase()
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  console.log(url);
+  return NextResponse.json(url);
 }
+
+// export async function POST(request: NextRequest) {
+//   const { fileName } = await request.json();
+//   return new Response(request.body);
+//   let audioURL = postAudioToSupa(fileName, file)
+// }
 
 // async function uploadAudioToSupabase(base64Audio: string, fileName: string) {
 //   const { data, error } = await supabase.storage
