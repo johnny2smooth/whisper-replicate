@@ -4,6 +4,11 @@ import { postAudioToSupa } from "./post-audio-to-supabase";
 import { useRouter } from "next/navigation";
 
 export default function AudioForm() {
+  const [isUploading, setIsUploading] = useState("");
+  const [supaUrl, setSupaUrl] = useState("");
+  const [isEmpty, setIsEmpty] = useState(true);
+  const [fileName, setFileName] = useState("");
+
   const router = useRouter();
 
   function handleDragEnter(e: DragEvent<HTMLDivElement>) {
@@ -25,33 +30,6 @@ export default function AudioForm() {
     e.currentTarget.classList.remove(`border-green-200`);
   }
 
-  function handleDrop(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    const files = e.dataTransfer.files;
-
-    let uploadedFile = document.getElementById("file-example") as HTMLElement;
-    const inputAudio = document.getElementById(
-      "inputAudio"
-    ) as HTMLInputElement;
-
-    if (files[0].type.startsWith("audio")) {
-      e.currentTarget.classList.remove(`border-green-200`);
-      e.currentTarget.classList.add(`border-green-600`);
-      inputAudio.files = files;
-      if (inputAudio.files.length > 0) {
-        uploadedFile.textContent = inputAudio.files[0].name;
-        uploadedFile.classList.add(`text-green-200`, "opacity-100");
-      }
-    } else {
-      uploadedFile.textContent = "invalid file type";
-      e.currentTarget.classList.remove(`border-green-200`);
-      e.currentTarget.classList.add(`border-red-600`);
-      uploadedFile.classList.add("text-red-200", "opacity-100");
-      // disable submit button
-    }
-  }
-
   function handleClick(e: MouseEvent<HTMLDivElement>) {
     e.preventDefault();
     const inputAudio = document.getElementById(
@@ -60,12 +38,26 @@ export default function AudioForm() {
     inputAudio.click();
   }
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     if (e.target.files && e.target.files?.length > 0) {
-      let uploadedFile = document.getElementById("file-example") as HTMLElement;
-      uploadedFile.textContent = e.target.files[0].name;
-      uploadedFile.classList.add(`text-green-200`, "opacity-100");
+      // dispatch
+      setFileName(e.target.files[0].name);
+      setIsEmpty(false);
+      setIsUploading("isUploading");
+
+      const { data, error } = await postAudioToSupa(
+        e.target.files[0].name,
+        e.target.files[0]
+      );
+      if (error) {
+        setIsUploading("failed");
+        console.error(error);
+      }
+      if (data) {
+        setIsUploading("uploaded");
+        setSupaUrl(data.path);
+      }
     }
   }
 
@@ -76,12 +68,8 @@ export default function AudioForm() {
       "inputAudio"
     ) as HTMLInputElement;
 
-    if (inputAudio.files) {
-      const { data, error } = await postAudioToSupa(
-        inputAudio.files[0].name,
-        inputAudio.files[0]
-      );
-      router.push("/" + data.path);
+    if (supaUrl.length > 0) {
+      router.push("/" + supaUrl);
     }
   }
 
@@ -90,10 +78,12 @@ export default function AudioForm() {
       <h4 className="font-mono text-4xl">input</h4>
       <form
         onSubmit={handleSubmit}
-        className="border-white border-2 border-solid w-1/2 p-4 stack"
+        className={`${
+          !isEmpty ? "border-green-300" : "border-yellow-200"
+        }  border-2 border-solid w-1/2 p-4 stack`}
       >
-        <div className="flex flex-col stack">
-          <label htmlFor="inputAudio">
+        <div className={`bg-black flex flex-col stack opacity-100`}>
+          <label htmlFor="inputAudio" className="pt-2 px-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -122,49 +112,75 @@ export default function AudioForm() {
             required
           />
           <div
-            id="dropbox"
-            className="flex flex-col justify-center items-center gap-4 h-36 text-shade border-white border-2 border-opacity-90 border-dashed cursor-pointer my-auto px-4"
-            onDragEnter={handleDragEnter}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleClick}
+            className={`${
+              !isEmpty ? "border-green-300" : "border-white"
+            } border-2 border-opacity-90 border-dashed transition-all duration-500`}
           >
-            <div className="flex gap-4 font-mono">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="icon"
-                role="presentation"
-              >
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <p>
-                Drop or click to select an{" "}
-                <span className="underline">audio file</span>
-              </p>
-            </div>
             <div
-              className="font-mono text-gray-100 opacity-50"
-              id="file-example"
+              id="dropbox"
+              className={`${
+                !isEmpty ? "border-green-300" : "border-white"
+              } flex flex-col justify-center items-center gap-4 min-h-36 text-shade cursor-pointer my-auto px-4 py-6`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={handleClick}
             >
-              patient-interview.mp3
+              <div className="flex gap-4 font-mono">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="icon"
+                  role="presentation"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p
+                  className={`${
+                    !isEmpty ? "" : "first:animate-pulse animate-pulse"
+                  }`}
+                >
+                  {isUploading === "isUploading"
+                    ? "Processing your"
+                    : isUploading === "uploaded"
+                    ? "We are ready to transcribe your"
+                    : isUploading === "failed"
+                    ? "There was an error uploading your"
+                    : `Drop or click to select an`}{" "}
+                  <span className="underline">audio file</span>
+                </p>
+              </div>
+              <div
+                className={`${
+                  !isEmpty
+                    ? "text-green-100 opacity-100"
+                    : "text-gray-100 opacity-50"
+                } font-mono`}
+                id="file-example"
+              >
+                {!isEmpty ? `${fileName}` : "patient-interview.mp3"}
+              </div>
             </div>
           </div>
         </div>
         <div className="flex justify-end ">
           <button
             type="submit"
-            className="border border-1 border-green-300 p-2"
+            className={`${
+              isUploading !== "uploaded"
+                ? "border-red-300 bg-red-500 text-red-500"
+                : "border-green-300 text-white"
+            } border border-1 p-2 transition-all ease-in duration-500 `}
+            disabled={isUploading !== "uploaded"}
           >
             Submit
           </button>

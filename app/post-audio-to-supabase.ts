@@ -5,9 +5,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 export async function postAudioToSupa(fileName: string, file: File) {
+  let uniqueName = await createUniqueName(fileName);
   const { data, error } = await supabase.storage
     .from("audio")
-    .upload(`${fileName}`, file, {
+    .upload(`${uniqueName}`, file, {
       contentType: "audio/mpeg",
       upsert: false,
     });
@@ -15,4 +16,10 @@ export async function postAudioToSupa(fileName: string, file: File) {
     throw error;
   }
   return { data, error };
+}
+
+async function createUniqueName(fileName: string) {
+  const [ogName, fileType] = fileName.split(".");
+  const timestamp = new Date().getTime();
+  return `${ogName}-${timestamp}.${fileType}`;
 }
