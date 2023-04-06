@@ -11,6 +11,14 @@ export default function AudioForm() {
 
   const router = useRouter();
 
+  let borderColors = isEmpty
+    ? "border-white"
+    : isUploading === "isUploading"
+    ? "border-purple-400"
+    : isUploading === "uploaded"
+    ? "border-green-400"
+    : "border-red-400";
+
   function handleDragEnter(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -79,11 +87,17 @@ export default function AudioForm() {
       <form
         onSubmit={handleSubmit}
         className={`${
-          !isEmpty ? "border-green-300" : "border-yellow-200"
-        }  border-2 border-solid w-1/2 p-4 stack`}
+          isEmpty
+            ? "border-white"
+            : isUploading === "isUploading"
+            ? "border-purple-400"
+            : isUploading === "uploaded"
+            ? "border-green-400"
+            : "border-red-400"
+        }  border-2 border-solid w-1/2 p-4 stack transition-colors`}
       >
         <div className={`bg-black flex flex-col stack opacity-100`}>
-          <label htmlFor="inputAudio" className="pt-2 px-4">
+          <label htmlFor="inputAudio" className={`pt-2 px-4 `}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -112,15 +126,11 @@ export default function AudioForm() {
             required
           />
           <div
-            className={`${
-              !isEmpty ? "border-green-300" : "border-white"
-            } border-2 border-opacity-90 border-dashed transition-all duration-500`}
+            className={`${borderColors} border-2 border-opacity-90 border-dashed transition-color duration-500`}
           >
             <div
               id="dropbox"
-              className={`${
-                !isEmpty ? "border-green-300" : "border-white"
-              } flex flex-col justify-center items-center gap-4 min-h-36 text-shade cursor-pointer my-auto px-4 py-6`}
+              className={`${borderColors} flex flex-col justify-center items-center gap-4 min-h-36 text-shade cursor-pointer my-auto px-4 py-6`}
               onDragEnter={handleDragEnter}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -144,25 +154,42 @@ export default function AudioForm() {
                   <polyline points="17 8 12 3 7 8"></polyline>
                   <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
-                <p
-                  className={`${
-                    !isEmpty ? "" : "first:animate-pulse animate-pulse"
-                  }`}
-                >
-                  {isUploading === "isUploading"
-                    ? "Processing your"
-                    : isUploading === "uploaded"
-                    ? "We are ready to transcribe your"
-                    : isUploading === "failed"
-                    ? "There was an error uploading your"
-                    : `Drop or click to select an`}{" "}
+                <p>
+                  {isUploading === "isUploading" ? (
+                    <>
+                      Currently{" "}
+                      <span className="text-purple-400">processing</span> your
+                    </>
+                  ) : isUploading === "uploaded" ? (
+                    <>
+                      We are ready to{" "}
+                      <span className="text-green-400">transcribe</span> your
+                    </>
+                  ) : isUploading === "failed" ? (
+                    "There was an error uploading your"
+                  ) : (
+                    `Drop or click to select an`
+                  )}{" "}
                   <span className="underline">audio file</span>
+                  {isUploading === "isUploading" && (
+                    <>
+                      <span className="animate-pulse delay-100 text-red-400">
+                        .
+                      </span>
+                      <span className="animate-pulse delay-150 text-yellow-400">
+                        .
+                      </span>
+                      <span className="animate-pulse delay-200 text-green-400">
+                        .
+                      </span>
+                    </>
+                  )}
                 </p>
               </div>
               <div
                 className={`${
                   !isEmpty
-                    ? "text-green-100 opacity-100"
+                    ? "text-green-400 opacity-100"
                     : "text-gray-100 opacity-50"
                 } font-mono`}
                 id="file-example"
@@ -178,11 +205,11 @@ export default function AudioForm() {
             className={`${
               isUploading !== "uploaded"
                 ? "border-red-300 bg-red-500 text-red-500"
-                : "border-green-300 text-white"
-            } border border-1 p-2 transition-all ease-in duration-500 `}
+                : "border-green-300 bg-green-400 text-black"
+            } border border-1 p-2 transition-color ease-in duration-500 font-bold font-mono`}
             disabled={isUploading !== "uploaded"}
           >
-            Submit
+            Submit <span className="animate-pulse">&rarr;</span>
           </button>
         </div>
       </form>
