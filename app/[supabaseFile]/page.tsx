@@ -2,13 +2,16 @@ import { Prediction as PredictionType } from "@/replicate";
 import Prediction from "./prediction";
 
 export const dynamicParams = true;
+export const revalidate = 0;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default async function Page({ params }: { params: any }) {
   if (params.supabaseFile === "custom-service-worker.js") return;
 
   const url = createSupabaseUrl(params.supabaseFile);
 
-  const response = await fetch("https://api.replicate.com/v1/predictions", {
+  let response = await fetch("https://api.replicate.com/v1/predictions", {
     method: "POST",
     mode: "no-cors",
     headers: {
@@ -24,15 +27,34 @@ export default async function Page({ params }: { params: any }) {
 
   let prediction: PredictionType = await response.json();
 
-  console.log(prediction);
-  //   router.push(pathname + "?" + createQueryString("id", prediction.id));
+  while (
+    prediction.status === "starting" ||
+    prediction.status === "processing" ||
+    prediction.status === "running"
+  ) {
+    let get = prediction.urls.get;
+    let currentResponse = await fetch(get, {
+      mode: "no-cors",
+      headers: {
+        Authorization: `Token ${process.env.REPLICATE_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    prediction = await currentResponse.json();
+    console.log(prediction.status);
+    console.log(prediction);
+    await sleep(1000);
+  }
+
+  if (prediction.status === "finished") {
+  }
+
+  // console.log(prediction);
 
   return (
     <div>
-      <h1> My Post</h1>
-      {prediction && (
-        <Prediction id={prediction.id} audio={prediction.input.audio} />
-      )}
+      <h1 className="font-mono">The prediction</h1>
+      {prediction && <Prediction prediction={prediction} />}
 
       {/* {predictionId && (
         <>

@@ -18,8 +18,7 @@ export async function postAudioToSupa(
   if (error) {
     throw error;
   }
-  let url = `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/storage/buckets/audio/`;
-  return { data, error, url };
+  return { data, error };
 }
 
 async function createUniqueName(fileName: string) {

@@ -13,6 +13,7 @@ export default function AudioForm() {
     expectedCost: "$0.00",
     localUrl: "",
   });
+  console.log(isUploading);
 
   const router = useRouter();
 
@@ -65,7 +66,7 @@ export default function AudioForm() {
       setIsEmpty(false);
       setIsUploading("isUploading");
 
-      const { data, error, url } = await postAudioToSupa(
+      const { data, error } = await postAudioToSupa(
         e.target.files[0].name,
         e.target.files[0]
       );
@@ -82,14 +83,8 @@ export default function AudioForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-
-    const inputAudio = document.getElementById(
-      "inputAudio"
-    ) as HTMLInputElement;
-
-    if (supaUrl.length > 0) {
-      router.push("/" + supaUrl);
-    }
+    console.log("submitted");
+    router.push("/" + supaUrl);
   }
 
   return (
