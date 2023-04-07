@@ -1,8 +1,27 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Prediction } from "@/replicate";
 
-export default function Prediction({ prediction }: { prediction: Prediction }) {
+export default function Prediction({ id, audio }: { id: string | null, audio: string | null }) {
+  const [prediction, setPrediction] = useState<Prediction>({completed_at: "",
+    created_at: "",
+    error: null,
+    id: "",
+    input: {
+        audio: string | null;
+    };
+    logs: string | null;
+    metrics: {};
+    output: string | null;
+    started_at: string | null;
+    status: string | null;
+    urls: {
+        get: string;
+        cancel: string;
+    };
+    version: string;
+    webhook_completed: string | null;});
+
   useEffect(() => {}, [prediction]);
 
   return <p>I predict that {prediction.id} will finish soon!</p>;
@@ -18,11 +37,10 @@ export default function Prediction({ prediction }: { prediction: Prediction }) {
 //   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // );
 
-// const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // inside
 
-// const [prediction, setPrediction] = useState<Prediction>({});
 
 // const [error, setError] = useState<string>("");
 // const router = useRouter();

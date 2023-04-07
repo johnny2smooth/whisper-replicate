@@ -4,7 +4,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-export async function postAudioToSupa(fileName: string, file: File) {
+export async function postAudioToSupa(
+  fileName: string,
+  file: File | ArrayBuffer
+) {
   let uniqueName = await createUniqueName(fileName);
   const { data, error } = await supabase.storage
     .from("audio")
@@ -15,7 +18,8 @@ export async function postAudioToSupa(fileName: string, file: File) {
   if (error) {
     throw error;
   }
-  return { data, error };
+  let url = `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/storage/buckets/audio/`;
+  return { data, error, url };
 }
 
 async function createUniqueName(fileName: string) {

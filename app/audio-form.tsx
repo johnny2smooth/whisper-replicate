@@ -7,7 +7,12 @@ export default function AudioForm() {
   const [isUploading, setIsUploading] = useState("");
   const [supaUrl, setSupaUrl] = useState("");
   const [isEmpty, setIsEmpty] = useState(true);
-  const [fileName, setFileName] = useState("");
+  const [fileInfo, setFileInfo] = useState({
+    name: "patient-interview.mp3",
+    size: "0 bits",
+    expectedCost: "$0.00",
+    localUrl: "",
+  });
 
   const router = useRouter();
 
@@ -49,12 +54,18 @@ export default function AudioForm() {
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     if (e.target.files && e.target.files?.length > 0) {
-      // dispatch
-      setFileName(e.target.files[0].name);
+      console.log(e.target.files[0]);
+      setFileInfo({
+        name: e.target.files[0].name,
+        size: `${e.target.files[0].size}`,
+
+        expectedCost: "$1.00",
+        localUrl: `${URL.createObjectURL(e.target.files[0])}`,
+      });
       setIsEmpty(false);
       setIsUploading("isUploading");
 
-      const { data, error } = await postAudioToSupa(
+      const { data, error, url } = await postAudioToSupa(
         e.target.files[0].name,
         e.target.files[0]
       );
@@ -63,8 +74,8 @@ export default function AudioForm() {
         console.error(error);
       }
       if (data) {
-        setIsUploading("uploaded");
         setSupaUrl(data.path);
+        setIsUploading("uploaded");
       }
     }
   }
@@ -86,15 +97,7 @@ export default function AudioForm() {
       <h4 className="font-mono text-4xl">input</h4>
       <form
         onSubmit={handleSubmit}
-        className={`${
-          isEmpty
-            ? "border-white"
-            : isUploading === "isUploading"
-            ? "border-purple-400"
-            : isUploading === "uploaded"
-            ? "border-green-400"
-            : "border-red-400"
-        }  border-2 border-solid w-1/2 p-4 stack transition-colors`}
+        className={`${borderColors} border-2 border-solid w-[90vw] max-w-3xl p-4 stack transition-colors`}
       >
         <div className={`bg-black flex flex-col stack opacity-100`}>
           <label htmlFor="inputAudio" className={`pt-2 px-4 `}>
@@ -170,16 +173,18 @@ export default function AudioForm() {
                   ) : (
                     `Drop or click to select an`
                   )}{" "}
-                  <span className="underline">audio file</span>
+                  <span className="underline underline-offset-4">
+                    audio file
+                  </span>
                   {isUploading === "isUploading" && (
                     <>
-                      <span className="animate-pulse delay-100 text-red-400">
+                      <span className="animate-pulse delay-100 text-red-400 text-lg">
                         .
                       </span>
-                      <span className="animate-pulse delay-150 text-yellow-400">
+                      <span className="animate-pulse delay-150 text-yellow-400 text-lg">
                         .
                       </span>
-                      <span className="animate-pulse delay-200 text-green-400">
+                      <span className="animate-pulse delay-200 text-green-400 text-lg">
                         .
                       </span>
                     </>
@@ -194,25 +199,50 @@ export default function AudioForm() {
                 } font-mono`}
                 id="file-example"
               >
-                {!isEmpty ? `${fileName}` : "patient-interview.mp3"}
+                {fileInfo.name}
               </div>
             </div>
           </div>
         </div>
-        <div className="flex justify-end ">
+        <div className="flex gap-4 justify-end transition-all">
+          <audio
+            controls
+            className="grow"
+            src={fileInfo.localUrl}
+            crossOrigin="use-credentials"
+          >
+            <a>hello</a>
+          </audio>
+
           <button
             type="submit"
             className={`${
               isUploading !== "uploaded"
                 ? "border-red-300 bg-red-500 text-red-500"
                 : "border-green-300 bg-green-400 text-black"
-            } border border-1 p-2 transition-color ease-in duration-500 font-bold font-mono`}
+            } border border-1 p-2 transition-color ease-in duration-500 font-mono`}
             disabled={isUploading !== "uploaded"}
           >
             Submit <span className="animate-pulse">&rarr;</span>
           </button>
         </div>
       </form>
+      <div
+        className={`${borderColors}  border-b-2 border-r-2 border-l-2 border-solid w-[90vw] max-w-3xl p-4 stack transition-colors font-mono`}
+      >
+        <p>
+          file size:{" "}
+          <span className={`${isUploading !== "" ? "text-green-400" : ""}`}>
+            {fileInfo.size}
+          </span>{" "}
+        </p>
+        <p>
+          expected cost:{" "}
+          <span className={`${isUploading !== "" ? "text-green-400" : ""}`}>
+            {fileInfo.expectedCost}
+          </span>{" "}
+        </p>
+      </div>
     </>
   );
 }
