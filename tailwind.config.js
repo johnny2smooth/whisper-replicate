@@ -6,7 +6,17 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        sinWave: {
+          "0%, 100%": { transform: "scaleY(1)" },
+          "50%": { transform: "scaleX(3)" },
+        },
+      },
+      animation: {
+        sinWave: "sinWave 1s ease-in-out infinite",
+      },
+    },
   },
   plugins: [],
 };

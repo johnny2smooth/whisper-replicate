@@ -1,0 +1,27 @@
+.sinWave {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  animation: sinWave 1 ease 100 infinite;
+}
+
+.sinWaveBar {
+  height: 100%;
+  position: absolute;
+}
+
+@keyframes sinWave {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(100);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}

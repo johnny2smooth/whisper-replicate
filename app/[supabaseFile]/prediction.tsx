@@ -1,5 +1,6 @@
 import type { Prediction } from "@/replicate";
 import { ClientOutput } from "./client-output";
+import LoadingSinWave from "./loading-sin-wave";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -27,7 +28,10 @@ export default async function Prediction({
       {prediction.status === "starting" ||
       prediction.status === "processing" ||
       prediction.status === "running" ? (
-        <ClientOutput predictionLogs={prediction.logs as string} />
+        <>
+          <LoadingSinWave />
+          <ClientOutput predictionLogs={prediction.logs as string} />
+        </>
       ) : prediction.status === "canceled" ? (
         <h1>canceled</h1>
       ) : (

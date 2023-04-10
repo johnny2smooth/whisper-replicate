@@ -1,12 +1,12 @@
 import { Prediction as PredictionType } from "@/replicate";
 import Prediction from "./prediction";
 import { Suspense } from "react";
+import LoadingSinWave from "./loading-sin-wave";
 
 export const dynamicParams = true;
 
 export default async function Page({ params }: { params: any }) {
   let url = "";
-  let get = "";
   if (params.supabaseFile !== "custom-service-worker.js") {
     url = createSupabaseUrl(params.supabaseFile);
   }
@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: any }) {
 
   return (
     <div>
-      <Suspense fallback={<p>Fetching prediction</p>}>
+      <Suspense fallback={<LoadingSinWave from="black" via="black" />}>
         {/* @ts-expect-error Async Server Component */}
         <Prediction predictionId={prediction.id} />
       </Suspense>
