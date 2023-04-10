@@ -83,8 +83,9 @@ export default function AudioForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    console.log("submitted");
+    console.log("pressed push");
     router.push("/" + supaUrl);
+    console.log("pushed URL");
   }
 
   return (

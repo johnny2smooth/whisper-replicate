@@ -15,7 +15,6 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <main className="flex flex-col justify-center items-center  mt-4">
-          <AudioForm />
           {children}
         </main>
       </body>
