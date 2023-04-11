@@ -50,13 +50,17 @@ export default async function Prediction({
             <span className="text-green-400">
               {" "}
               $
-              {((Math.trunc(prediction.metrics.predict_time * 100) / 100 / 60) *
-                192) /
-                1000}
+              {prediction.metrics.predict_time &&
+                ((Math.trunc(prediction.metrics.predict_time * 100) /
+                  100 /
+                  60) *
+                  192) /
+                  1000}
             </span>
           </p>
-          <p className="font-mono">{prediction.output.transcription}</p>
-          {/* client button that is passed transcription and turns it into .txt file */}
+          <p className="font-mono border-solid border-2 border-green-400 p-4">
+            {prediction.output.transcription}
+          </p>
           <DownloadTranscription transcript={prediction.output.transcription} />
         </div>
       )}

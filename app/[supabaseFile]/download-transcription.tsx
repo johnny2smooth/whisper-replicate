@@ -14,5 +14,12 @@ export default function DownloadTranscription({
     URL.revokeObjectURL(link.href);
   };
 
-  return <button onClick={downloadFile}>Download .txt</button>;
+  return (
+    <button
+      onClick={downloadFile}
+      className="border-solid border-2 border-green-400 self-end p-4 bg-green-300 text-black"
+    >
+      Download .txt
+    </button>
+  );
 }
