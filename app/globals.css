@@ -133,7 +133,7 @@ a {
     transform: scaleY(1);
   }
   50% {
-    transform: scaleY(3);
+    transform: scaleY(0.5);
   }
   100% {
     transform: scaleY(1);

@@ -7,8 +7,13 @@ export type Prediction = {
     audio: string | null;
   };
   logs: string | null;
-  metrics: {};
-  output: string | null;
+  metrics: {
+    predict_time: number;
+  };
+  output: {
+    segments: [];
+    transcription: string;
+  };
   started_at: string | null;
   status: string | null;
   urls: {

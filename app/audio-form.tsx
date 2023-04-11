@@ -120,7 +120,7 @@ export default function AudioForm() {
             name="inputAudio"
             id="inputAudio"
             className="hidden"
-            accept=".mp3,mp4,.zip"
+            accept=".mp3,mp4,.zip,.m4a"
             onChange={handleChange}
             required
           />
