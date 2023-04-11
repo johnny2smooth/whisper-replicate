@@ -1,7 +1,7 @@
 import { Prediction as PredictionType } from "@/replicate";
 import Prediction from "./prediction";
 import { Suspense } from "react";
-import LoadingSinWave from "./loading-sin-wave";
+import LoadingSinWave from "../loading-sin-wave";
 
 export const dynamicParams = true;
 
@@ -14,7 +14,9 @@ export default async function Page({ params }: { params: any }) {
 
   return (
     <div>
-      <Suspense fallback={<LoadingSinWave from="black" via="black" />}>
+      <Suspense
+        fallback={<LoadingSinWave fromVia="from-slate-900 via-slate-300" />}
+      >
         {/* @ts-expect-error Async Server Component */}
         <Prediction predictionId={prediction.id} />
       </Suspense>

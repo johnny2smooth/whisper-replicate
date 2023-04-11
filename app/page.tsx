@@ -1,6 +1,12 @@
+import LoadingSinWave from "./loading-sin-wave";
 import AudioForm from "./audio-form";
 
 export const revalidate = 0;
 export default async function Home() {
-  return <AudioForm />;
+  return (
+    <>
+      <AudioForm />
+      <LoadingSinWave fromVia="from-slate-900 via-slate-300" />
+    </>
+  );
 }

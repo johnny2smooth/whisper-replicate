@@ -123,3 +123,19 @@ a {
     color-scheme: dark;
   }
 }
+
+.sinWave {
+  animation: sinWave 1 ease 100 infinite;
+}
+
+@keyframes sinWave {
+  0% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(3);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
