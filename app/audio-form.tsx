@@ -13,7 +13,6 @@ export default function AudioForm() {
     expectedCost: "$0.00",
     localUrl: "",
   });
-  console.log(isUploading);
 
   const router = useRouter();
 
@@ -70,6 +69,7 @@ export default function AudioForm() {
         e.target.files[0].name,
         e.target.files[0]
       );
+
       if (error) {
         setIsUploading("failed");
         console.error(error);

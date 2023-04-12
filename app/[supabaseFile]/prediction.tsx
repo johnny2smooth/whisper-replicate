@@ -31,6 +31,7 @@ export default async function Prediction({
       prediction.status === "running" ? (
         <>
           <LoadingSinWave fromVia="from-purple-900 via-green-400" />
+          <p className="font-mono">{prediction.status}...</p>
           <ClientOutput predictionLogs={prediction.logs as string} />
         </>
       ) : prediction.status === "canceled" || prediction.status === "failed" ? (
@@ -61,6 +62,7 @@ export default async function Prediction({
           <p className="font-mono border-solid border-2 border-green-400 p-4">
             {prediction.output.transcription}
           </p>
+          {/* <pre>{JSON.stringify(prediction, null, 2)}</pre> */}
           <DownloadTranscription transcript={prediction.output.transcription} />
         </div>
       )}
