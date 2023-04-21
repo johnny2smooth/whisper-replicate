@@ -1,38 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# An Interface to help my team transcribe patient interviews
 
-## Getting Started
+As we know, talking to your users is best way to get ideas. We collected over 1,400 minutes of interviews with our users. We asked them
+about their experience with our product, what they liked, what they didn't like, and what they wanted to see in the future. The problem
+is that we have to transcribe all of these interviews. That is going to take a LOT of time. Unless... we could have a computer do all of the work for us.
 
-First, run the development server:
+**Transcription Tool:** https://whisper-replicate.vercel.app/
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+![a preview of what the tool looks like](https://vzocljdcgkqzpnuvoiwa.supabase.co/storage/v1/object/public/README%20photos/Screenshot%202023-04-21%20at%201.30.44%20PM.png?t=2023-04-21T20%3A31%3A34.282Z)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How It's Made
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Tech used:** TypeScript, JavaScript, Replicate, Whisper, HTML, CSS, Tailwind, Next.js, Supabase, Vercel
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+This project was built manily using [Replicate](https://replicate.com/explore) and [SupaBase](https://supabase.com/). If you're unfamiliar with Replicate, "_You can use Replicate to run machine learning models in the cloud from your own code, without having to set up any servers_". The main selling point to use Replicate, for me, is that you can tap into Replicate's _BLAZINGLY_ fast GPUs. So all of the audio files that I needed to transcripe with [openai/whisper](https://openai.com/research/whisper) could have a very quick turnaround time for the end user. For example, if I run whisper locally on my own computer, it will process a 40 minute long audio file in about an hour. But if I run it on Replicate, it will process the same audio file in about 50 seconds.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Replicate takes a URI (a real link) to the audio files that it is going to process. To make sure that I am giving Replicate what it requires, I pre-load audio files to a Supabase storage database. Once Supabase processes a file, I send back the URI to Replicate. Replicate then processes the audio file and returns the transcription.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+I used Next.js to build the frontend and logic and Tailwind to style it. I used Supabase to store the data and Vercel to deploy it.
 
-## Learn More
+## Optimizations
 
-To learn more about Next.js, take a look at the following resources:
+Using Replicate can be expensive, so I want to make sure that I am Authorizing the user before they can use the tool. I was running this tool locally as a precaucion against unwanted users possibly finding and using this tool. I will use Supabase's Row Level Security (RLS) to enforce that a user is from a certain email domain before they can use the tool.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+I also want to be able to store the transcription in the database. I will use Supabase's Storage API to store the transcription as a text file. So that if a user needs to re-download the transcription, they can do so.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Lessons Learned
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+One of the major roadblocks that I encountered was that I was blocking the UI while making so many fetch() requests. I learned that I was creating a waterfall effect. I was making a request, waiting for the response, then making another request, and so on. So to navigate this, I made sure that I was fetching data incrementally. I would fetch the data that I needed, then update the UI, then fetch the next piece of data that I needed. This way, the UI is never blocked and the user can continue to use the tool.
