@@ -17,7 +17,7 @@ export default function DownloadTranscription({
   return (
     <button
       onClick={downloadFile}
-      className="border-solid border-2 border-green-400 self-end p-4 bg-green-300 text-black"
+      className="font-mono border-solid border-2 border-green-400 self-end p-4 bg-green-400 text-black"
     >
       Download .txt
     </button>
